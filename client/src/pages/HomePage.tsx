@@ -154,6 +154,21 @@ export default function HomePage() {
             ))
           )}
         </div>
+
+        {/* Footer */}
+        <footer className="mt-12 py-8 px-4 border-t">
+          <div className="text-center space-y-2">
+            <h3 className="font-semibold text-lg">
+              {settings?.restaurantName || "Mini's & Twennies"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Fresh burgers made to order
+            </p>
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} {settings?.restaurantName || "Mini's & Twennies"}. All rights reserved.
+            </p>
+          </div>
+        </footer>
       </div>
 
       <CartButton itemCount={totalItems} onClick={() => setIsCartOpen(true)} />
