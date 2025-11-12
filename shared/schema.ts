@@ -38,6 +38,11 @@ export const settings = pgTable("settings", {
   whatsappNumber: text("whatsapp_number").notNull(),
   restaurantName: text("restaurant_name").notNull(),
   currency: text("currency").notNull().default("$"),
+  logoUrl: text("logo_url"),
+  footerText: text("footer_text"),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  contactAddress: text("contact_address"),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
