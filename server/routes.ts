@@ -3,6 +3,14 @@ import { createServer, type Server } from "http";
 import passport from "passport";
 import { storage } from "./storage";
 import { requireAuth } from "./auth";
+import {
+  insertCategorySchema,
+  insertMenuItemSchema,
+  insertBannerSchema,
+  insertSettingsSchema,
+  reorderCategoriesSchema,
+  reorderBannersSchema,
+} from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -130,9 +138,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/categories", requireAuth, async (req, res) => {
     try {
-      const category = await storage.createCategory(req.body);
+      const validatedData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(validatedData);
       res.json(category);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid category data", details: error.errors });
+      }
       console.error("Error creating category:", error);
       res.status(500).json({ error: "Failed to create category" });
     }
@@ -140,9 +152,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/categories/:id", requireAuth, async (req, res) => {
     try {
-      const category = await storage.updateCategory(req.params.id, req.body);
+      const validatedData = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(req.params.id, validatedData);
+      if (!category) {
+        return res.status(404).json({ error: "Category not found" });
+      }
       res.json(category);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid category data", details: error.errors });
+      }
       console.error("Error updating category:", error);
       res.status(500).json({ error: "Failed to update category" });
     }
@@ -160,9 +179,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/categories/reorder", requireAuth, async (req, res) => {
     try {
-      await storage.reorderCategories(req.body.categoryIds);
+      const validatedData = reorderCategoriesSchema.parse(req.body);
+      await storage.reorderCategories(validatedData.categoryIds);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid reorder data", details: error.errors });
+      }
       console.error("Error reordering categories:", error);
       res.status(500).json({ error: "Failed to reorder categories" });
     }
@@ -181,9 +204,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/menu-items", requireAuth, async (req, res) => {
     try {
-      const menuItem = await storage.createMenuItem(req.body);
+      const validatedData = insertMenuItemSchema.parse(req.body);
+      const menuItem = await storage.createMenuItem(validatedData);
       res.json(menuItem);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid menu item data", details: error.errors });
+      }
       console.error("Error creating menu item:", error);
       res.status(500).json({ error: "Failed to create menu item" });
     }
@@ -191,9 +218,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/menu-items/:id", requireAuth, async (req, res) => {
     try {
-      const menuItem = await storage.updateMenuItem(req.params.id, req.body);
+      const validatedData = insertMenuItemSchema.partial().parse(req.body);
+      const menuItem = await storage.updateMenuItem(req.params.id, validatedData);
+      if (!menuItem) {
+        return res.status(404).json({ error: "Menu item not found" });
+      }
       res.json(menuItem);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid menu item data", details: error.errors });
+      }
       console.error("Error updating menu item:", error);
       res.status(500).json({ error: "Failed to update menu item" });
     }
@@ -250,9 +284,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/banners", requireAuth, async (req, res) => {
     try {
-      const banner = await storage.createBanner(req.body);
+      const validatedData = insertBannerSchema.parse(req.body);
+      const banner = await storage.createBanner(validatedData);
       res.json(banner);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid banner data", details: error.errors });
+      }
       console.error("Error creating banner:", error);
       res.status(500).json({ error: "Failed to create banner" });
     }
@@ -260,9 +298,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/banners/:id", requireAuth, async (req, res) => {
     try {
-      const banner = await storage.updateBanner(req.params.id, req.body);
+      const validatedData = insertBannerSchema.partial().parse(req.body);
+      const banner = await storage.updateBanner(req.params.id, validatedData);
+      if (!banner) {
+        return res.status(404).json({ error: "Banner not found" });
+      }
       res.json(banner);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid banner data", details: error.errors });
+      }
       console.error("Error updating banner:", error);
       res.status(500).json({ error: "Failed to update banner" });
     }
@@ -294,9 +339,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/banners/reorder", requireAuth, async (req, res) => {
     try {
-      await storage.reorderBanners(req.body.bannerIds);
+      const validatedData = reorderBannersSchema.parse(req.body);
+      await storage.reorderBanners(validatedData.bannerIds);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid reorder data", details: error.errors });
+      }
       console.error("Error reordering banners:", error);
       res.status(500).json({ error: "Failed to reorder banners" });
     }
@@ -305,9 +354,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Settings management
   app.put("/api/admin/settings", requireAuth, async (req, res) => {
     try {
-      const settings = await storage.updateSettings(req.body);
+      const validatedData = insertSettingsSchema.partial().parse(req.body);
+      const settings = await storage.updateSettings(validatedData);
       res.json(settings);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid settings data", details: error.errors });
+      }
       console.error("Error updating settings:", error);
       res.status(500).json({ error: "Failed to update settings" });
     }

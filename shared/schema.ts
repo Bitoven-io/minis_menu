@@ -62,3 +62,12 @@ export interface CartItem {
   quantity: number;
   note?: string;
 }
+
+// Validation schemas for admin routes
+export const reorderCategoriesSchema = z.object({
+  categoryIds: z.array(z.string()),
+});
+
+export const reorderBannersSchema = z.object({
+  bannerIds: z.array(z.string()),
+});

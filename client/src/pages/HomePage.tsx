@@ -1,132 +1,53 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import BannerCarousel from "@/components/BannerCarousel";
 import CategoryNav from "@/components/CategoryNav";
 import MenuItemCard from "@/components/MenuItemCard";
 import ItemDetailModal from "@/components/ItemDetailModal";
 import CartButton from "@/components/CartButton";
 import CartDrawer from "@/components/CartDrawer";
-import type { MenuItem, CartItem } from "@shared/schema";
-import burgerBanner from "@assets/generated_images/Burger_special_offer_banner_29506f1a.png";
-import pastaBanner from "@assets/generated_images/Pasta_promotion_banner_56244eca.png";
-import sushiBanner from "@assets/generated_images/Sushi_special_banner_2f1d67eb.png";
-import pizzaImg from "@assets/generated_images/Margherita_pizza_item_68c1ddf8.png";
-import saladImg from "@assets/generated_images/Caesar_salad_item_aa63fe79.png";
-import cakeImg from "@assets/generated_images/Chocolate_lava_cake_6fb89a3a.png";
-import smoothieImg from "@assets/generated_images/Smoothie_bowl_item_22fdaf86.png";
-import tacosImg from "@assets/generated_images/Beef_tacos_item_32ca824a.png";
+import type { MenuItem, CartItem, Category, Banner, Settings } from "@shared/schema";
 import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [, setLocation] = useLocation();
-  const [activeCategory, setActiveCategory] = useState("1");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
-  // TODO: Remove mock data - fetch from API
-  const banners = [
-    { id: "1", imageUrl: burgerBanner },
-    { id: "2", imageUrl: pastaBanner },
-    { id: "3", imageUrl: sushiBanner },
-  ];
+  // Fetch data from API
+  const { data: banners = [] } = useQuery<Banner[]>({
+    queryKey: ["/api/banners"],
+  });
 
-  // TODO: Remove mock data - fetch from API
-  const categories = [
-    { id: "1", name: "Burgers" },
-    { id: "2", name: "Sides" },
-    { id: "3", name: "Desserts" },
-    { id: "4", name: "Drinks" },
-  ];
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+  });
 
-  // TODO: Remove mock data - fetch from API
-  const menuItems: MenuItem[] = [
-    {
-      id: "1",
-      categoryId: "1",
-      name: "Classic Mini Burger",
-      description: "100% beef patty with lettuce, tomato, onion and our special sauce",
-      price: 899,
-      imageUrl: pizzaImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "2",
-      categoryId: "1",
-      name: "Twennie Deluxe",
-      description: "Double beef patties, cheese, bacon, and all the fixings",
-      price: 1499,
-      imageUrl: burgerBanner,
-      isAvailable: false,
-      isHidden: false,
-    },
-    {
-      id: "3",
-      categoryId: "1",
-      name: "Chicken Supreme",
-      description: "Crispy chicken breast with lettuce, mayo, and pickles",
-      price: 999,
-      imageUrl: tacosImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "4",
-      categoryId: "2",
-      name: "Golden Fries",
-      description: "Crispy golden french fries with sea salt",
-      price: 399,
-      imageUrl: saladImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "5",
-      categoryId: "2",
-      name: "Onion Rings",
-      description: "Crispy beer-battered onion rings with ranch dip",
-      price: 499,
-      imageUrl: tacosImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "6",
-      categoryId: "3",
-      name: "Chocolate Brownie",
-      description: "Warm chocolate brownie with vanilla ice cream",
-      price: 599,
-      imageUrl: cakeImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "7",
-      categoryId: "4",
-      name: "Fresh Lemonade",
-      description: "Freshly squeezed lemonade with mint",
-      price: 299,
-      imageUrl: smoothieImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-    {
-      id: "8",
-      categoryId: "4",
-      name: "Chocolate Shake",
-      description: "Thick and creamy chocolate milkshake",
-      price: 499,
-      imageUrl: smoothieImg,
-      isAvailable: true,
-      isHidden: false,
-    },
-  ];
+  const { data: menuItems = [] } = useQuery<MenuItem[]>({
+    queryKey: ["/api/menu-items"],
+  });
 
-  const filteredItems = menuItems.filter(
-    (item) => item.categoryId === activeCategory && !item.isHidden
-  );
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  });
+
+  // Set initial active category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].id);
+    }
+  }, [categories, activeCategory]);
+
+  const filteredItems = useMemo(() => {
+    if (!activeCategory) return [];
+    return menuItems.filter(
+      (item) => item.categoryId === activeCategory && !item.isHidden
+    );
+  }, [menuItems, activeCategory]);
 
   const handleItemClick = (item: MenuItem) => {
     if (!item.isAvailable) return;
@@ -169,7 +90,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-20 bg-background border-b p-4">
         <h1 className="text-2xl font-semibold text-center" data-testid="text-restaurant-name">
-          Mini's & Twennies
+          {settings?.restaurantName || "Mini's & Twennies"}
         </h1>
       </header>
 
