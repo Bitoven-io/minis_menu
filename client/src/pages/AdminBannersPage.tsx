@@ -26,6 +26,7 @@ export default function AdminBannersPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   const { data: banners = [], isLoading } = useQuery<Banner[]>({
     queryKey: ["/api/admin/banners"],
@@ -93,12 +94,15 @@ export default function AdminBannersPage() {
     
     const bannerIds = newOrder.map(b => b.id);
     
+    setIsReordering(true);
     try {
       await apiRequest("POST", "/api/admin/banners/reorder", { bannerIds });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/banners"] });
       toast({ title: "Banner order updated" });
     } catch {
       toast({ title: "Failed to reorder banners", variant: "destructive" });
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -172,13 +176,13 @@ export default function AdminBannersPage() {
         ) : (
           <div className="space-y-2">
             {banners.map((banner, index) => (
-              <Card key={banner.id}>
+              <Card key={banner.id} data-testid={`card-banner-${banner.id}`}>
                 <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 py-4">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base truncate">{banner.imageUrl}</CardTitle>
+                        <CardTitle className="text-base truncate" data-testid={`text-url-${banner.id}`}>{banner.imageUrl}</CardTitle>
                         {!banner.isActive && (
                           <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground flex-shrink-0" data-testid={`badge-inactive-${banner.id}`}>
                             Inactive
@@ -202,7 +206,7 @@ export default function AdminBannersPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => moveBanner(index, "up")}
-                      disabled={index === 0}
+                      disabled={index === 0 || isReordering}
                       data-testid={`button-move-up-${banner.id}`}
                     >
                       <ArrowUp className="h-4 w-4" />
@@ -211,7 +215,7 @@ export default function AdminBannersPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => moveBanner(index, "down")}
-                      disabled={index === banners.length - 1}
+                      disabled={index === banners.length - 1 || isReordering}
                       data-testid={`button-move-down-${banner.id}`}
                     >
                       <ArrowDown className="h-4 w-4" />

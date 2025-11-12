@@ -120,9 +120,22 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-20 bg-background border-b p-4">
-        <h1 className="text-2xl font-semibold text-center" data-testid="text-restaurant-name">
-          {settings?.restaurantName || "Mini's & Twennies"}
-        </h1>
+        <div className="flex flex-col items-center gap-2">
+          {settings?.logoUrl && settings.logoUrl.trim() && (
+            <img 
+              src={settings.logoUrl.trim()} 
+              alt={`${settings.restaurantName || "Mini's & Twennies"} logo`}
+              className="h-12 w-auto object-contain"
+              data-testid="img-restaurant-logo"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          <h1 className="text-2xl font-semibold text-center" data-testid="text-restaurant-name">
+            {settings?.restaurantName || "Mini's & Twennies"}
+          </h1>
+        </div>
       </header>
 
       <div className="max-w-lg mx-auto">
@@ -158,13 +171,28 @@ export default function HomePage() {
         {/* Footer */}
         <footer className="mt-12 py-8 px-4 border-t">
           <div className="text-center space-y-2">
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg" data-testid="text-footer-restaurant-name">
               {settings?.restaurantName || "Mini's & Twennies"}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Fresh burgers made to order
-            </p>
-            <p className="text-sm text-muted-foreground">
+            {settings?.footerText && (
+              <p className="text-sm text-muted-foreground" data-testid="text-footer-text">
+                {settings.footerText}
+              </p>
+            )}
+            {(settings?.contactPhone || settings?.contactEmail || settings?.contactAddress) && (
+              <div className="text-sm text-muted-foreground space-y-1" data-testid="div-contact-info">
+                {settings?.contactPhone && (
+                  <p data-testid="text-contact-phone">Phone: {settings.contactPhone}</p>
+                )}
+                {settings?.contactEmail && (
+                  <p data-testid="text-contact-email">Email: {settings.contactEmail}</p>
+                )}
+                {settings?.contactAddress && (
+                  <p data-testid="text-contact-address">{settings.contactAddress}</p>
+                )}
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground" data-testid="text-copyright">
               © {new Date().getFullYear()} {settings?.restaurantName || "Mini's & Twennies"}. All rights reserved.
             </p>
           </div>

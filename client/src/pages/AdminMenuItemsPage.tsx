@@ -221,11 +221,11 @@ export default function AdminMenuItemsPage() {
                 ) : (
                   <div className="grid gap-3">
                     {items.map((item) => (
-                      <Card key={item.id}>
+                      <Card key={item.id} data-testid={`card-menu-item-${item.id}`}>
                         <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 py-4">
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
-                              <CardTitle className="text-base">{item.name}</CardTitle>
+                              <CardTitle className="text-base" data-testid={`text-name-${item.id}`}>{item.name}</CardTitle>
                               {!item.isAvailable && (
                                 <span className="text-xs px-2 py-0.5 rounded-md bg-destructive/10 text-destructive" data-testid={`badge-unavailable-${item.id}`}>
                                   Unavailable
@@ -237,14 +237,14 @@ export default function AdminMenuItemsPage() {
                                 </span>
                               )}
                             </div>
-                            <CardDescription className="text-sm line-clamp-2">
+                            <CardDescription className="text-sm line-clamp-2" data-testid={`text-description-${item.id}`}>
                               {item.description}
                             </CardDescription>
                             <p className="text-sm font-semibold" data-testid={`text-price-${item.id}`}>
                               ${(item.price / 100).toFixed(2)}
                             </p>
                             {item.imageUrl && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="text-xs text-muted-foreground truncate" data-testid={`text-image-url-${item.id}`}>
                                 Image: {item.imageUrl}
                               </p>
                             )}
@@ -320,7 +320,7 @@ export default function AdminMenuItemsPage() {
                           {...field}
                           placeholder="Describe the menu item..."
                           rows={3}
-                          data-testid="input-description"
+                          data-testid="textarea-description"
                         />
                       </FormControl>
                       <FormMessage />

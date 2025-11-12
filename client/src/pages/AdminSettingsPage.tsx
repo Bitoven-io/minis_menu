@@ -259,7 +259,7 @@ export default function AdminSettingsPage() {
                           {...field}
                           placeholder="123 Main Street, Amman, Jordan"
                           rows={2}
-                          data-testid="input-contact-address"
+                          data-testid="textarea-contact-address"
                         />
                       </FormControl>
                       <FormMessage />

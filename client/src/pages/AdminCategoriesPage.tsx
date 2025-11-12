@@ -24,6 +24,7 @@ export default function AdminCategoriesPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -90,12 +91,15 @@ export default function AdminCategoriesPage() {
     
     const categoryIds = newOrder.map(c => c.id);
     
+    setIsReordering(true);
     try {
       await apiRequest("POST", "/api/admin/categories/reorder", { categoryIds });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({ title: "Category order updated" });
     } catch {
       toast({ title: "Failed to reorder categories", variant: "destructive" });
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -169,18 +173,18 @@ export default function AdminCategoriesPage() {
         ) : (
           <div className="space-y-2">
             {categories.map((category, index) => (
-              <Card key={category.id}>
+              <Card key={category.id} data-testid={`card-category-${category.id}`}>
                 <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 py-4">
                   <div className="flex items-center gap-3 flex-1">
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
-                    <CardTitle className="text-base">{category.name}</CardTitle>
+                    <CardTitle className="text-base" data-testid={`text-name-${category.id}`}>{category.name}</CardTitle>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => moveCategory(index, "up")}
-                      disabled={index === 0}
+                      disabled={index === 0 || isReordering}
                       data-testid={`button-move-up-${category.id}`}
                     >
                       <ArrowUp className="h-4 w-4" />
@@ -189,7 +193,7 @@ export default function AdminCategoriesPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => moveCategory(index, "down")}
-                      disabled={index === categories.length - 1}
+                      disabled={index === categories.length - 1 || isReordering}
                       data-testid={`button-move-down-${category.id}`}
                     >
                       <ArrowDown className="h-4 w-4" />
