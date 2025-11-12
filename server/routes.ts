@@ -1,8 +1,49 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import passport from "passport";
 import { storage } from "./storage";
+import { requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(401).json({ error: info?.message || "Invalid credentials" });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        // Don't send password in response
+        const { password, ...userWithoutPassword } = user;
+        return res.json({ user: userWithoutPassword });
+      });
+    })(req, res, next);
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/auth/me", (req, res) => {
+    if (req.isAuthenticated()) {
+      const user = req.user as any;
+      const { password, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } else {
+      res.status(401).json({ error: "Not authenticated" });
+    }
+  });
+
   // Customer-facing API routes
   
   // Get all categories
@@ -71,6 +112,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching settings:", error);
       res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  // Admin routes (all protected with requireAuth)
+  
+  // Category management
+  app.get("/api/admin/categories", requireAuth, async (req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/admin/categories", requireAuth, async (req, res) => {
+    try {
+      const category = await storage.createCategory(req.body);
+      res.json(category);
+    } catch (error) {
+      console.error("Error creating category:", error);
+      res.status(500).json({ error: "Failed to create category" });
+    }
+  });
+
+  app.put("/api/admin/categories/:id", requireAuth, async (req, res) => {
+    try {
+      const category = await storage.updateCategory(req.params.id, req.body);
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      res.status(500).json({ error: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteCategory(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ error: "Failed to delete category" });
+    }
+  });
+
+  app.post("/api/admin/categories/reorder", requireAuth, async (req, res) => {
+    try {
+      await storage.reorderCategories(req.body.categoryIds);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reordering categories:", error);
+      res.status(500).json({ error: "Failed to reorder categories" });
+    }
+  });
+
+  // Menu item management
+  app.get("/api/admin/menu-items", requireAuth, async (req, res) => {
+    try {
+      const menuItems = await storage.getAllMenuItems();
+      res.json(menuItems);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      res.status(500).json({ error: "Failed to fetch menu items" });
+    }
+  });
+
+  app.post("/api/admin/menu-items", requireAuth, async (req, res) => {
+    try {
+      const menuItem = await storage.createMenuItem(req.body);
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error creating menu item:", error);
+      res.status(500).json({ error: "Failed to create menu item" });
+    }
+  });
+
+  app.put("/api/admin/menu-items/:id", requireAuth, async (req, res) => {
+    try {
+      const menuItem = await storage.updateMenuItem(req.params.id, req.body);
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error updating menu item:", error);
+      res.status(500).json({ error: "Failed to update menu item" });
+    }
+  });
+
+  app.delete("/api/admin/menu-items/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteMenuItem(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting menu item:", error);
+      res.status(500).json({ error: "Failed to delete menu item" });
+    }
+  });
+
+  app.post("/api/admin/menu-items/:id/toggle-availability", requireAuth, async (req, res) => {
+    try {
+      const currentItem = await storage.getMenuItem(req.params.id);
+      if (!currentItem) {
+        return res.status(404).json({ error: "Menu item not found" });
+      }
+      const menuItem = await storage.toggleItemAvailability(req.params.id, !currentItem.isAvailable);
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error toggling menu item availability:", error);
+      res.status(500).json({ error: "Failed to toggle availability" });
+    }
+  });
+
+  app.post("/api/admin/menu-items/:id/toggle-visibility", requireAuth, async (req, res) => {
+    try {
+      const currentItem = await storage.getMenuItem(req.params.id);
+      if (!currentItem) {
+        return res.status(404).json({ error: "Menu item not found" });
+      }
+      const menuItem = await storage.toggleItemVisibility(req.params.id, !currentItem.isHidden);
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error toggling menu item visibility:", error);
+      res.status(500).json({ error: "Failed to toggle visibility" });
+    }
+  });
+
+  // Banner management
+  app.get("/api/admin/banners", requireAuth, async (req, res) => {
+    try {
+      const banners = await storage.getAllBanners();
+      res.json(banners);
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+      res.status(500).json({ error: "Failed to fetch banners" });
+    }
+  });
+
+  app.post("/api/admin/banners", requireAuth, async (req, res) => {
+    try {
+      const banner = await storage.createBanner(req.body);
+      res.json(banner);
+    } catch (error) {
+      console.error("Error creating banner:", error);
+      res.status(500).json({ error: "Failed to create banner" });
+    }
+  });
+
+  app.put("/api/admin/banners/:id", requireAuth, async (req, res) => {
+    try {
+      const banner = await storage.updateBanner(req.params.id, req.body);
+      res.json(banner);
+    } catch (error) {
+      console.error("Error updating banner:", error);
+      res.status(500).json({ error: "Failed to update banner" });
+    }
+  });
+
+  app.delete("/api/admin/banners/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteBanner(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting banner:", error);
+      res.status(500).json({ error: "Failed to delete banner" });
+    }
+  });
+
+  app.post("/api/admin/banners/:id/toggle-active", requireAuth, async (req, res) => {
+    try {
+      const currentBanner = await storage.getBanner(req.params.id);
+      if (!currentBanner) {
+        return res.status(404).json({ error: "Banner not found" });
+      }
+      const banner = await storage.toggleBannerActive(req.params.id, !currentBanner.isActive);
+      res.json(banner);
+    } catch (error) {
+      console.error("Error toggling banner active:", error);
+      res.status(500).json({ error: "Failed to toggle banner" });
+    }
+  });
+
+  app.post("/api/admin/banners/reorder", requireAuth, async (req, res) => {
+    try {
+      await storage.reorderBanners(req.body.bannerIds);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reordering banners:", error);
+      res.status(500).json({ error: "Failed to reorder banners" });
+    }
+  });
+
+  // Settings management
+  app.put("/api/admin/settings", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.updateSettings(req.body);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      res.status(500).json({ error: "Failed to update settings" });
     }
   });
 
