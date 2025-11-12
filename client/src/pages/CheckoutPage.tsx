@@ -9,8 +9,13 @@ import type { CartItem, Settings } from "@shared/schema";
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      const savedCart = localStorage.getItem("cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage:", error);
+      return [];
+    }
   });
 
   const { data: settings } = useQuery<Settings>({

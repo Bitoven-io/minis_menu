@@ -10,16 +10,35 @@ import type { MenuItem, CartItem, Category, Banner, Settings } from "@shared/sch
 import { useLocation } from "wouter";
 
 export default function HomePage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      const savedCart = localStorage.getItem("cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage:", error);
+      return [];
+    }
   });
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+
+  // Re-sync cart when navigating back to homepage (e.g., after checkout clears it)
+  useEffect(() => {
+    if (location === "/") {
+      try {
+        const savedCart = localStorage.getItem("cart");
+        const parsedCart = savedCart ? JSON.parse(savedCart) : [];
+        setCartItems(parsedCart);
+      } catch (error) {
+        console.error("Failed to sync cart on route change:", error);
+        setCartItems([]);
+      }
+    }
+  }, [location]);
 
   // Fetch data from API
   const { data: banners = [] } = useQuery<Banner[]>({
@@ -40,7 +59,11 @@ export default function HomePage() {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
+    try {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    } catch (error) {
+      console.error("Failed to save cart to localStorage:", error);
+    }
   }, [cartItems]);
 
   // Set initial active category when categories load
