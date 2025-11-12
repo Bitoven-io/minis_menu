@@ -181,6 +181,8 @@ export default function HomePage() {
           setEditingItemIndex(null);
         }}
         onAddToCart={handleAddToCart}
+        initialQuantity={editingItemIndex !== null ? cartItems[editingItemIndex]?.quantity : 1}
+        initialNote={editingItemIndex !== null ? cartItems[editingItemIndex]?.note || "" : ""}
       />
 
       <CartDrawer

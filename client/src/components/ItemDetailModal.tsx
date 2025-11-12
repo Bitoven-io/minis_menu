@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,8 @@ interface ItemDetailModalProps {
   onClose: () => void;
   onAddToCart: (item: MenuItem, quantity: number, note?: string) => void;
   currency?: string;
+  initialQuantity?: number;
+  initialNote?: string;
 }
 
 export default function ItemDetailModal({
@@ -19,9 +21,17 @@ export default function ItemDetailModal({
   onClose,
   onAddToCart,
   currency = "$",
+  initialQuantity = 1,
+  initialNote = "",
 }: ItemDetailModalProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [note, setNote] = useState("");
+  const [quantity, setQuantity] = useState(initialQuantity);
+  const [note, setNote] = useState(initialNote);
+
+  // Update state when initial values change (for editing existing items)
+  useEffect(() => {
+    setQuantity(initialQuantity);
+    setNote(initialNote);
+  }, [initialQuantity, initialNote, isOpen]);
 
   const handleClose = () => {
     setQuantity(1);
