@@ -18,7 +18,7 @@ export default function CheckoutPage() {
   const handleSendToWhatsApp = () => {
     // TODO: Replace with actual WhatsApp number from settings
     const whatsappNumber = "1234567890";
-    const restaurantName = "Delicious Bites";
+    const restaurantName = "Mini's & Twennies";
 
     let message = `*${restaurantName} - New Order*\n\n`;
     message += `*Order Details:*\n`;

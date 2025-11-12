@@ -34,10 +34,10 @@ export default function HomePage() {
 
   // TODO: Remove mock data - fetch from API
   const categories = [
-    { id: "1", name: "Pizza" },
-    { id: "2", name: "Salads" },
+    { id: "1", name: "Burgers" },
+    { id: "2", name: "Sides" },
     { id: "3", name: "Desserts" },
-    { id: "4", name: "Beverages" },
+    { id: "4", name: "Drinks" },
   ];
 
   // TODO: Remove mock data - fetch from API
@@ -45,9 +45,9 @@ export default function HomePage() {
     {
       id: "1",
       categoryId: "1",
-      name: "Margherita Pizza",
-      description: "Fresh mozzarella, tomato sauce, and basil on a thin crust",
-      price: 1299,
+      name: "Classic Mini Burger",
+      description: "100% beef patty with lettuce, tomato, onion and our special sauce",
+      price: 899,
       imageUrl: pizzaImg,
       isAvailable: true,
       isHidden: false,
@@ -55,50 +55,70 @@ export default function HomePage() {
     {
       id: "2",
       categoryId: "1",
-      name: "Pepperoni Pizza",
-      description: "Classic pepperoni with extra cheese",
+      name: "Twennie Deluxe",
+      description: "Double beef patties, cheese, bacon, and all the fixings",
       price: 1499,
-      imageUrl: pizzaImg,
+      imageUrl: burgerBanner,
       isAvailable: false,
       isHidden: false,
     },
     {
       id: "3",
-      categoryId: "2",
-      name: "Caesar Salad",
-      description: "Crispy lettuce with parmesan and caesar dressing",
-      price: 899,
-      imageUrl: saladImg,
+      categoryId: "1",
+      name: "Chicken Supreme",
+      description: "Crispy chicken breast with lettuce, mayo, and pickles",
+      price: 999,
+      imageUrl: tacosImg,
       isAvailable: true,
       isHidden: false,
     },
     {
       id: "4",
-      categoryId: "3",
-      name: "Chocolate Lava Cake",
-      description: "Warm chocolate cake with vanilla ice cream",
-      price: 699,
-      imageUrl: cakeImg,
+      categoryId: "2",
+      name: "Golden Fries",
+      description: "Crispy golden french fries with sea salt",
+      price: 399,
+      imageUrl: saladImg,
       isAvailable: true,
       isHidden: false,
     },
     {
       id: "5",
-      categoryId: "4",
-      name: "Berry Smoothie Bowl",
-      description: "Fresh berries with granola and honey",
-      price: 799,
-      imageUrl: smoothieImg,
+      categoryId: "2",
+      name: "Onion Rings",
+      description: "Crispy beer-battered onion rings with ranch dip",
+      price: 499,
+      imageUrl: tacosImg,
       isAvailable: true,
       isHidden: false,
     },
     {
       id: "6",
-      categoryId: "1",
-      name: "Beef Tacos",
-      description: "Three tacos with seasoned beef and fresh toppings",
-      price: 1099,
-      imageUrl: tacosImg,
+      categoryId: "3",
+      name: "Chocolate Brownie",
+      description: "Warm chocolate brownie with vanilla ice cream",
+      price: 599,
+      imageUrl: cakeImg,
+      isAvailable: true,
+      isHidden: false,
+    },
+    {
+      id: "7",
+      categoryId: "4",
+      name: "Fresh Lemonade",
+      description: "Freshly squeezed lemonade with mint",
+      price: 299,
+      imageUrl: smoothieImg,
+      isAvailable: true,
+      isHidden: false,
+    },
+    {
+      id: "8",
+      categoryId: "4",
+      name: "Chocolate Shake",
+      description: "Thick and creamy chocolate milkshake",
+      price: 499,
+      imageUrl: smoothieImg,
       isAvailable: true,
       isHidden: false,
     },
@@ -149,7 +169,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-20 bg-background border-b p-4">
         <h1 className="text-2xl font-semibold text-center" data-testid="text-restaurant-name">
-          Delicious Bites
+          Mini's & Twennies
         </h1>
       </header>
 
