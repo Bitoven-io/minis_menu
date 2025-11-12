@@ -15,7 +15,10 @@ export default function HomePage() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
   // Fetch data from API
@@ -34,6 +37,11 @@ export default function HomePage() {
   const { data: settings } = useQuery<Settings>({
     queryKey: ["/api/settings"],
   });
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Set initial active category when categories load
   useEffect(() => {
@@ -101,7 +109,7 @@ export default function HomePage() {
 
         <CategoryNav
           categories={categories}
-          activeCategory={activeCategory}
+          activeCategory={activeCategory || undefined}
           onCategoryClick={setActiveCategory}
         />
 

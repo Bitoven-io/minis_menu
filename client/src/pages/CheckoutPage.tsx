@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import OrderSummary from "@/components/OrderSummary";
-import type { CartItem } from "@shared/schema";
+import type { CartItem, Settings } from "@shared/schema";
 
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
-  const [cartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["/api/settings"],
+  });
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -16,9 +24,9 @@ export default function CheckoutPage() {
   }, [cartItems.length, setLocation]);
 
   const handleSendToWhatsApp = () => {
-    // TODO: Replace with actual WhatsApp number from settings
-    const whatsappNumber = "1234567890";
-    const restaurantName = "Mini's & Twennies";
+    const whatsappNumber = settings?.whatsappNumber || "1234567890";
+    const restaurantName = settings?.restaurantName || "Mini's & Twennies";
+    const currency = settings?.currency || "$";
 
     let message = `*${restaurantName} - New Order*\n\n`;
     message += `*Order Details:*\n`;
@@ -26,7 +34,7 @@ export default function CheckoutPage() {
     cartItems.forEach((item, index) => {
       message += `\n${index + 1}. *${item.menuItem.name}*\n`;
       message += `   Quantity: ${item.quantity}\n`;
-      message += `   Price: $${((item.menuItem.price * item.quantity) / 100).toFixed(2)}\n`;
+      message += `   Price: ${currency}${((item.menuItem.price * item.quantity) / 100).toFixed(2)}\n`;
       if (item.note) {
         message += `   Note: ${item.note}\n`;
       }
@@ -36,12 +44,17 @@ export default function CheckoutPage() {
       (sum, item) => sum + item.menuItem.price * item.quantity,
       0
     );
-    message += `\n*Total: $${(total / 100).toFixed(2)}*`;
+    message += `\n*Total: ${currency}${(total / 100).toFixed(2)}*`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
     window.open(whatsappUrl, "_blank");
+    
+    // Clear cart after sending order
+    localStorage.removeItem("cart");
+    setCartItems([]);
+    setLocation("/");
   };
 
   return (
@@ -61,7 +74,7 @@ export default function CheckoutPage() {
       </header>
 
       <div className="max-w-lg mx-auto p-4">
-        <OrderSummary cartItems={cartItems} onSendToWhatsApp={handleSendToWhatsApp} />
+        <OrderSummary cartItems={cartItems} onSendToWhatsApp={handleSendToWhatsApp} currency={settings?.currency} />
       </div>
     </div>
   );
