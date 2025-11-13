@@ -48,10 +48,15 @@ export default function AdminSettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: SettingsFormData) => {
-      return apiRequest("PUT", "/api/admin/settings", data);
+      const response = await apiRequest("PUT", "/api/admin/settings", data);
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedSettings) => {
+      // Update the cache with the new settings data
+      queryClient.setQueryData(["/api/settings"], updatedSettings);
+      // Also invalidate to ensure fresh data on next page load
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      
       toast({
         title: "Settings updated",
         description: "Your restaurant settings have been saved successfully.",
