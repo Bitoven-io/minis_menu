@@ -11,6 +11,7 @@ import {
   reorderCategoriesSchema,
   reorderBannersSchema,
 } from "../shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -363,6 +364,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error updating settings:", error);
       res.status(500).json({ error: "Failed to update settings" });
+    }
+  });
+
+  // Object storage routes for image uploads
+  
+  // Get upload URL for an image
+  app.post("/api/objects/upload", requireAuth, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  // Set ACL policy for uploaded image
+  app.put("/api/images", requireAuth, async (req, res) => {
+    try {
+      if (!req.body.imageURL) {
+        return res.status(400).json({ error: "imageURL is required" });
+      }
+
+      const userId = (req.user as any)?.id || "admin";
+      const objectStorageService = new ObjectStorageService();
+      
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.imageURL,
+        {
+          owner: userId,
+          // Images are public so customers can view them
+          visibility: "public",
+        },
+      );
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting image ACL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Serve uploaded images
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      
+      // All uploaded images are public, so no auth check needed
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
     }
   });
 
