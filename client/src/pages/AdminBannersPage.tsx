@@ -12,8 +12,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Pencil, Trash2, Plus, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { Pencil, Trash2, Plus, GripVertical, ArrowUp, ArrowDown, Upload, X } from "lucide-react";
 import type { Banner } from "@shared/schema";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 
 const bannerFormSchema = z.object({
   imageUrl: z.string().min(1, "Image URL is required"),
@@ -262,14 +264,64 @@ export default function AdminBannersPage() {
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="https://example.com/banner.jpg"
-                          data-testid="input-image-url"
-                        />
-                      </FormControl>
+                      <FormLabel>Banner Image</FormLabel>
+                      <div className="space-y-2">
+                        {field.value && (
+                          <div className="relative inline-block">
+                            <img 
+                              src={field.value} 
+                              alt="Banner preview" 
+                              className="h-32 w-64 object-cover rounded-md"
+                              data-testid="img-preview"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6"
+                              onClick={() => field.onChange("")}
+                              data-testid="button-remove-image"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <FormControl>
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            buttonVariant={field.value ? "outline" : "default"}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload", {});
+                              const data = await response.json();
+                              return {
+                                method: "PUT" as const,
+                                url: data.uploadURL,
+                              };
+                            }}
+                            onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const uploadURL = result.successful[0].uploadURL;
+                                
+                                // Set ACL policy for the uploaded image
+                                const response = await apiRequest("PUT", "/api/images", {
+                                  imageURL: uploadURL,
+                                });
+                                const data = await response.json();
+                                
+                                // Update the form with the normalized object path
+                                field.onChange(data.objectPath);
+                                toast({
+                                  title: "Banner image uploaded successfully",
+                                });
+                              }
+                            }}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {field.value ? "Change Image" : "Upload Image"}
+                          </ObjectUploader>
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
