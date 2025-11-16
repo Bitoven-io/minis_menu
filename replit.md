@@ -151,10 +151,23 @@ server/
 - Vite plugins for error overlay and debugging
 - Drizzle Kit for database migrations and schema management
 
-**Asset Management:**
-- Local image storage in attached_assets directory
-- Placeholder images for menu items and banners
-- CDN-ready structure for production optimization
+**Object Storage (Replit App Storage):**
+- Google Cloud Storage backend via Replit's built-in object storage integration
+- Direct file uploads through Uppy dashboard modal interface
+- Public read access for customer-facing images (menu items, banners, logo)
+- Private uploads with ACL policy management for access control
+- Normalized object paths for stable, non-expiring image URLs
+- Upload flow: Admin uploads → signed URL → ACL set to public → normalized path stored
+- Serve flow: GET /objects/:objectPath serves images with public read access
+
+**Image Upload Architecture:**
+- **ObjectUploader Component**: Reusable React component using Uppy for file selection and upload
+- **Server Endpoints**:
+  - POST /api/objects/upload: Returns signed upload URL for direct-to-storage uploads
+  - PUT /api/images: Normalizes uploaded image path and sets public ACL policy
+  - GET /objects/:objectPath: Serves uploaded images with public read access
+- **ObjectStorageService**: Handles upload URL generation, ACL management, and file serving
+- **ACL Policies**: Metadata-based access control with visibility: "public" for customer-facing images
 
 **Build & Deployment:**
 - ESBuild for server-side bundling
@@ -180,10 +193,17 @@ server/
 - Protected routes with session-based authentication (admin/admin123)
 - Category management (create, edit, delete, reorder)
 - Menu item management (create, edit, delete, hide, toggle availability)
+  - File upload functionality for menu item images via Uppy modal
+  - Image preview and removal capabilities
 - Banner management (create, edit, delete, reorder, toggle active status)
+  - File upload functionality for banner images via Uppy modal
+  - Image preview and removal capabilities
 - Restaurant settings (name, logo, footer tagline, contact information)
+  - File upload functionality for restaurant logo via Uppy modal
+  - Logo preview and removal capabilities
 - Responsive sidebar navigation for all admin pages
 - Comprehensive data-testid attributes for testing
+- All images stored in Replit App Storage with public access for customers
 
 **Technical Implementation:**
 - Full-stack TypeScript with type-safe database operations
