@@ -11,12 +11,15 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Settings } from "@shared/schema";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
+import { Upload, X } from "lucide-react";
 
 const settingsFormSchema = z.object({
   restaurantName: z.string().min(1, "Restaurant name is required"),
   whatsappNumber: z.string().min(1, "WhatsApp number is required"),
   currency: z.string().min(1, "Currency is required"),
-  logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  logoUrl: z.string().optional(),
   footerText: z.string().optional(),
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Must be a valid email").optional().or(z.literal("")),
@@ -169,17 +172,67 @@ export default function AdminSettingsPage() {
                   name="logoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Logo URL (Optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="https://example.com/logo.png"
-                          data-testid="input-logo-url"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter a URL to your logo image. Leave empty to show restaurant name only.
-                      </FormDescription>
+                      <FormLabel>Logo (Optional)</FormLabel>
+                      <div className="space-y-2">
+                        {field.value && (
+                          <div className="relative inline-block">
+                            <img 
+                              src={field.value} 
+                              alt="Logo preview" 
+                              className="h-24 w-24 object-contain rounded-md bg-muted p-2"
+                              data-testid="img-logo-preview"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6"
+                              onClick={() => field.onChange("")}
+                              data-testid="button-remove-logo"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <FormControl>
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={5242880}
+                            buttonVariant={field.value ? "outline" : "default"}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload", {});
+                              const data = await response.json();
+                              return {
+                                method: "PUT" as const,
+                                url: data.uploadURL,
+                              };
+                            }}
+                            onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const uploadURL = result.successful[0].uploadURL;
+                                
+                                // Set ACL policy for the uploaded image
+                                const response = await apiRequest("PUT", "/api/images", {
+                                  imageURL: uploadURL,
+                                });
+                                const data = await response.json();
+                                
+                                // Update the form with the normalized object path
+                                field.onChange(data.objectPath);
+                                toast({
+                                  title: "Logo uploaded successfully",
+                                });
+                              }
+                            }}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {field.value ? "Change Logo" : "Upload Logo"}
+                          </ObjectUploader>
+                        </FormControl>
+                        <FormDescription>
+                          Upload your logo image. Leave empty to show restaurant name only.
+                        </FormDescription>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
