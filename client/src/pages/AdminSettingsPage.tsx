@@ -24,6 +24,7 @@ const settingsFormSchema = z.object({
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Must be a valid email").optional().or(z.literal("")),
   contactAddress: z.string().optional(),
+  addressLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 type SettingsFormData = z.infer<typeof settingsFormSchema>;
@@ -46,6 +47,7 @@ export default function AdminSettingsPage() {
       contactPhone: settings.contactPhone || "",
       contactEmail: settings.contactEmail || "",
       contactAddress: settings.contactAddress || "",
+      addressLink: settings.addressLink || "",
     } : undefined,
   });
 
@@ -320,6 +322,28 @@ export default function AdminSettingsPage() {
                           data-testid="textarea-contact-address"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="addressLink"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Link (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="url"
+                          placeholder="https://maps.google.com/?q=..."
+                          data-testid="input-address-link"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Paste a Google Maps link for your location
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

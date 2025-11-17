@@ -43,6 +43,7 @@ export const settings = pgTable("settings", {
   contactPhone: text("contact_phone"),
   contactEmail: text("contact_email"),
   contactAddress: text("contact_address"),
+  addressLink: text("address_link"),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });

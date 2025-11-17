@@ -194,14 +194,18 @@ export default function HomePage() {
                 )}
                 {settings?.contactAddress && (
                   <p data-testid="text-contact-address">
-                    <a 
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.contactAddress)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      {settings.contactAddress}
-                    </a>
+                    {settings.addressLink ? (
+                      <a 
+                        href={settings.addressLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {settings.contactAddress}
+                      </a>
+                    ) : (
+                      settings.contactAddress
+                    )}
                   </p>
                 )}
               </div>
