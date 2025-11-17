@@ -194,9 +194,9 @@ export default function HomePage() {
                 )}
                 {settings?.contactAddress && (
                   <p data-testid="text-contact-address">
-                    {settings.addressLink ? (
+                    {settings.addressLink?.trim() ? (
                       <a 
-                        href={settings.addressLink}
+                        href={settings.addressLink.trim()}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"

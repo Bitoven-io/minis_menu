@@ -24,7 +24,12 @@ const settingsFormSchema = z.object({
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Must be a valid email").optional().or(z.literal("")),
   contactAddress: z.string().optional(),
-  addressLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  addressLink: z.union([
+    z.string().url("Must be a valid URL"),
+    z.literal(""),
+    z.null(),
+    z.undefined()
+  ]).transform(val => val || "").optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsFormSchema>;

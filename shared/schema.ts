@@ -50,7 +50,17 @@ export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
 export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: true });
 export const insertBannerSchema = createInsertSchema(banners).omit({ id: true });
-export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true });
+export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true }).extend({
+  addressLink: z.union([
+    z.string().url("Must be a valid URL"),
+    z.literal(""),
+    z.null(),
+    z.undefined()
+  ]).transform(val => {
+    if (val === null || val === undefined || val === "") return null;
+    return val.trim() || null;
+  }).optional(),
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
