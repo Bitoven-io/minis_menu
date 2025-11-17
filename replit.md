@@ -118,6 +118,8 @@ server/
 **Settings Table:**
 - UUID primary key
 - WhatsApp number, restaurant name, currency
+- Logo URL, footer text, contact information (phone, email, address)
+- Address link (optional) for custom Google Maps URL
 - Single row configuration table
 
 **Schema Validation:**
@@ -162,6 +164,7 @@ server/
 
 **Image Upload Architecture:**
 - **ObjectUploader Component**: Reusable React component using Uppy for file selection and upload
+- **Uppy UI Styling**: CSS loaded via CDN (jsDelivr) for @uppy/core and @uppy/dashboard to avoid bundle bloat
 - **Server Endpoints**:
   - POST /api/objects/upload: Returns signed upload URL for direct-to-storage uploads
   - PUT /api/images: Normalizes uploaded image path and sets public ACL policy
@@ -198,9 +201,10 @@ server/
 - Banner management (create, edit, delete, reorder, toggle active status)
   - File upload functionality for banner images via Uppy modal
   - Image preview and removal capabilities
-- Restaurant settings (name, logo, footer tagline, contact information)
+- Restaurant settings (name, logo, footer tagline, contact information, address link)
   - File upload functionality for restaurant logo via Uppy modal
   - Logo preview and removal capabilities
+  - Custom Google Maps link field with URL validation
 - Responsive sidebar navigation for all admin pages
 - Comprehensive data-testid attributes for testing
 - All images stored in Replit App Storage with public access for customers
@@ -231,4 +235,3 @@ server/
 - Map-based delivery location selection
 - Order status tracking
 - Real-time cache synchronization between admin and public views
-- Object storage integration for image uploads
