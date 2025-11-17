@@ -8,8 +8,10 @@ interface MenuItemCardProps {
   onClick: () => void;
 }
 
-export default function MenuItemCard({ item, currency = "$", onClick }: MenuItemCardProps) {
+export default function MenuItemCard({ item, currency, onClick }: MenuItemCardProps) {
   const isUnavailable = !item.isAvailable;
+  const formattedPrice = (item.price / 100).toFixed(2);
+  const priceDisplay = currency ? `${currency}${formattedPrice}` : formattedPrice;
 
   return (
     <Card
@@ -45,7 +47,7 @@ export default function MenuItemCard({ item, currency = "$", onClick }: MenuItem
           {item.description}
         </p>
         <p className="text-lg font-bold text-primary mt-2" data-testid={`text-item-price-${item.id}`}>
-          {currency}{(item.price / 100).toFixed(2)}
+          {priceDisplay}
         </p>
       </div>
     </Card>

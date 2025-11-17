@@ -162,6 +162,7 @@ export default function HomePage() {
               <MenuItemCard
                 key={item.id}
                 item={item}
+                currency={settings?.currency}
                 onClick={() => handleItemClick(item)}
               />
             ))
@@ -182,13 +183,26 @@ export default function HomePage() {
             {(settings?.contactPhone || settings?.contactEmail || settings?.contactAddress) && (
               <div className="text-sm text-muted-foreground space-y-1" data-testid="div-contact-info">
                 {settings?.contactPhone && (
-                  <p data-testid="text-contact-phone">Phone: {settings.contactPhone}</p>
+                  <p data-testid="text-contact-phone">
+                    Phone: <a href={`tel:${settings.contactPhone}`} className="text-primary hover:underline">{settings.contactPhone}</a>
+                  </p>
                 )}
                 {settings?.contactEmail && (
-                  <p data-testid="text-contact-email">Email: {settings.contactEmail}</p>
+                  <p data-testid="text-contact-email">
+                    Email: <a href={`mailto:${settings.contactEmail}`} className="text-primary hover:underline">{settings.contactEmail}</a>
+                  </p>
                 )}
                 {settings?.contactAddress && (
-                  <p data-testid="text-contact-address">{settings.contactAddress}</p>
+                  <p data-testid="text-contact-address">
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.contactAddress)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {settings.contactAddress}
+                    </a>
+                  </p>
                 )}
               </div>
             )}
@@ -211,6 +225,7 @@ export default function HomePage() {
         onAddToCart={handleAddToCart}
         initialQuantity={editingItemIndex !== null ? cartItems[editingItemIndex]?.quantity : 1}
         initialNote={editingItemIndex !== null ? cartItems[editingItemIndex]?.note || "" : ""}
+        currency={settings?.currency}
       />
 
       <CartDrawer
@@ -220,6 +235,7 @@ export default function HomePage() {
         onRemoveItem={handleRemoveItem}
         onEditItem={handleEditItem}
         onProceedToCheckout={handleProceedToCheckout}
+        currency={settings?.currency}
       />
     </div>
   );

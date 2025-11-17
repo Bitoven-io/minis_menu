@@ -41,9 +41,10 @@ export default function AdminLoginPage() {
       const response = await apiRequest("POST", "/api/auth/login", data);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      setLocation("/admin");
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
+      setLocation("/admin/categories");
     },
     onError: (error: Error) => {
       toast({

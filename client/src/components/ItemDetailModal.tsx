@@ -20,7 +20,7 @@ export default function ItemDetailModal({
   isOpen,
   onClose,
   onAddToCart,
-  currency = "$",
+  currency,
   initialQuantity = 1,
   initialNote = "",
 }: ItemDetailModalProps) {
@@ -49,6 +49,10 @@ export default function ItemDetailModal({
   if (!item) return null;
 
   const totalPrice = (item.price * quantity) / 100;
+  const itemPrice = (item.price / 100).toFixed(2);
+  const totalPriceFormatted = totalPrice.toFixed(2);
+  const itemPriceDisplay = currency ? `${currency}${itemPrice}` : itemPrice;
+  const totalPriceDisplay = currency ? `${currency}${totalPriceFormatted}` : totalPriceFormatted;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -76,7 +80,7 @@ export default function ItemDetailModal({
           </p>
 
           <p className="text-lg font-bold text-primary" data-testid="text-modal-item-price">
-            {currency}{(item.price / 100).toFixed(2)}
+            {itemPriceDisplay}
           </p>
 
           <div className="space-y-2">
@@ -125,7 +129,7 @@ export default function ItemDetailModal({
             onClick={handleAddToCart}
             data-testid="button-add-to-cart"
           >
-            Add to Cart • {currency}{totalPrice.toFixed(2)}
+            Add to Cart • {totalPriceDisplay}
           </Button>
         </div>
       </DialogContent>

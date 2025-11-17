@@ -17,7 +17,7 @@ interface ObjectUploaderProps {
     result: UploadResult<Record<string, unknown>, Record<string, unknown>>
   ) => void;
   buttonClassName?: string;
-  buttonVariant?: "default" | "outline" | "secondary" | "ghost" | "link";
+  buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost";
   children: ReactNode;
 }
 

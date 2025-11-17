@@ -22,12 +22,17 @@ export default function CartDrawer({
   onRemoveItem,
   onEditItem,
   onProceedToCheckout,
-  currency = "$",
+  currency,
 }: CartDrawerProps) {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.menuItem.price * item.quantity,
     0
   );
+  
+  const formatPrice = (price: number) => {
+    const formatted = (price / 100).toFixed(2);
+    return currency ? `${currency}${formatted}` : formatted;
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -75,8 +80,7 @@ export default function CartDrawer({
                           </Button>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Qty: {item.quantity} × {currency}
-                          {(item.menuItem.price / 100).toFixed(2)}
+                          Qty: {item.quantity} × {formatPrice(item.menuItem.price)}
                         </p>
                         {item.note && (
                           <p className="text-sm italic text-muted-foreground mt-1" data-testid={`text-cart-item-note-${index}`}>
@@ -85,8 +89,7 @@ export default function CartDrawer({
                         )}
                         <div className="flex items-center gap-2 mt-2">
                           <p className="font-bold text-sm" data-testid={`text-cart-item-total-${index}`}>
-                            {currency}
-                            {((item.menuItem.price * item.quantity) / 100).toFixed(2)}
+                            {formatPrice(item.menuItem.price * item.quantity)}
                           </p>
                           <Button
                             size="sm"
@@ -111,8 +114,7 @@ export default function CartDrawer({
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Subtotal</span>
                 <span className="font-bold text-lg" data-testid="text-cart-subtotal">
-                  {currency}
-                  {(subtotal / 100).toFixed(2)}
+                  {formatPrice(subtotal)}
                 </span>
               </div>
               <Button

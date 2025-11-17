@@ -14,7 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Pencil, Trash2, Plus, Upload, X } from "lucide-react";
+import { Pencil, Trash2, Plus, Upload, X, MoreVertical, Eye, EyeOff } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import type { MenuItem, Category } from "@shared/schema";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
@@ -158,6 +159,42 @@ export default function AdminMenuItemsPage() {
     }
   };
 
+  const handleToggleAvailability = (id: string, isAvailable: boolean) => {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) return;
+    
+    updateMutation.mutate({
+      id,
+      data: {
+        name: item.name,
+        description: item.description,
+        price: item.price.toString(),
+        categoryId: item.categoryId,
+        imageUrl: item.imageUrl || "",
+        isAvailable,
+        isHidden: item.isHidden,
+      }
+    });
+  };
+
+  const handleToggleHidden = (id: string, isHidden: boolean) => {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) return;
+    
+    updateMutation.mutate({
+      id,
+      data: {
+        name: item.name,
+        description: item.description,
+        price: item.price.toString(),
+        categoryId: item.categoryId,
+        imageUrl: item.imageUrl || "",
+        isAvailable: item.isAvailable,
+        isHidden,
+      }
+    });
+  };
+
   const isLoading = isLoadingItems || isLoadingCategories;
 
   if (isLoading) {
@@ -251,24 +288,32 @@ export default function AdminMenuItemsPage() {
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleOpenDialog(item)}
-                              data-testid={`button-edit-${item.id}`}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(item.id)}
-                              data-testid={`button-delete-${item.id}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" data-testid={`button-actions-${item.id}`}>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenDialog(item)} data-testid={`action-edit-${item.id}`}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleAvailability(item.id, !item.isAvailable)} data-testid={`action-toggle-availability-${item.id}`}>
+                                {item.isAvailable ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                                {item.isAvailable ? "Mark Unavailable" : "Mark Available"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleHidden(item.id, !item.isHidden)} data-testid={`action-toggle-hidden-${item.id}`}>
+                                {item.isHidden ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
+                                {item.isHidden ? "Show Item" : "Hide Item"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive" data-testid={`action-delete-${item.id}`}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </CardHeader>
                       </Card>
                     ))}
